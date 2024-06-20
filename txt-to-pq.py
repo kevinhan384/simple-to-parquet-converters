@@ -12,6 +12,9 @@ for line in file.readlines():
     elements = line.split('\t')
     elements.pop()
 
+    if len(elements) != 4:
+        continue
+
     for element in elements:
         element = float(element.strip())
         elements_list.append(element)
