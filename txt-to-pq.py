@@ -1,8 +1,9 @@
 import pandas as pd
 from datetime import datetime, timedelta
 
-in_filename = input("Input filename> ")
-out_filename = input("Output filename> ")
+in_filename = input("Input> ")
+out_filename = input("Output> ")
+starttime = input("Starttime (mm/dd/yy HH:MM:SS)> ")
 file = open(in_filename, "r")
 
 line_list = []
@@ -16,10 +17,16 @@ for line in file.readlines():
         continue
 
     for element in elements:
-        element = float(element.strip())
-        elements_list.append(element)
+        try:
+            element = float(element.strip())
+            elements_list.append(element)
+        except:
+            break
     
-    elements_list[0] = datetime(2000, 1, 1) + timedelta(elements_list[0])
+    try:
+        elements_list[0] = datetime.strptime(starttime, "%m/%d/%y %H:%M:%S") + timedelta(minutes=elements_list[0])
+    except:
+        continue
 
     line_list.append(elements_list)
 
