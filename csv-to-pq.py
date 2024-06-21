@@ -1,14 +1,20 @@
-import pandas as pd
+import polars as pl
 from datetime import datetime, timedelta
+import argparse
 
-infile = input("Input file> ")
-outfile = input("Output file> ")
-starttime = input("Starttime (mm/dd/yy HH:MM:SS)> ")
+parser = argparse.ArgumentParser(prog='csv-to-pq',
+                                 description='Converts csv to parquet for swallow events')
 
-df = pd.read_csv(infile)
+parser.add_argument('infile', help="foo.csv")
+parser.add_argument('outfile', help="bar.parquet")
+parser.add_argument('starttime', help='mm/dd/yy-HH:MM:SS')
 
-times: list[str] = df["Time"].tolist()
-start: str = df["Date Created"].tolist()[0]
+args = parser.parse_args()
+
+df = pl.read_csv(args.infile)
+
+times: list[str] = df["Time"].to_list()
+start: str = df["Date Created"].to_list()[0]
 
 df_list = []
 for t in times:
@@ -21,9 +27,9 @@ for t in times:
     else:
         element = float(elements[0])
 
-    element = datetime.strptime(starttime, "%m/%d/%y %H:%M:%S") + timedelta(minutes=element)
+    element = datetime.strptime(args.starttime, "%m/%d/%y-%H:%M:%S") + timedelta(minutes=element)
 
     df_list.append([element, 1])
 
-df = pd.DataFrame(df_list, columns=["min", "mark"])
-df.to_parquet(outfile, engine="pyarrow")
+df = pl.DataFrame(df_list, schema=['ts', 'mark'])
+df.write_parquet(args.outfile, use_pyarrow=True)
